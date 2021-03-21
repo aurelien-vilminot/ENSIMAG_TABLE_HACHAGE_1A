@@ -8,10 +8,16 @@
 /*
   Crée un nouvel annuaire contenant _len_ listes vides.
 */
+struct dir {
+    struct contact *tab_list[0];
+    uint32_t taille;
+};
+
 struct dir *dir_create(uint32_t len)
 {
-    (void)len;
-    return NULL;
+    struct contact *m_tab[len];
+    struct dir *m_dir = {m_tab, len};
+    return m_dir;
 }
 
 /*
@@ -22,11 +28,14 @@ struct dir *dir_create(uint32_t len)
 */
 char *dir_insert(struct dir *dir, const char *name, const char *num)
 {
-    if (dir_lookup_num(dir, name) != NULL) {
-
+    char *search_result = dir_lookup_num(dir, name);
+    uint32_t index = hash(name) % dir->taille;
+    if (search_result == NULL) {
+        insert(&(dir->tab_list[index]), name, num);
         return NULL;
     } else {
-
+        replace(&(dir->tab_list[index]), name, num);
+        return search_result;
     }
 }
 
@@ -36,9 +45,8 @@ char *dir_insert(struct dir *dir, const char *name, const char *num)
 */
 const char *dir_lookup_num(struct dir *dir, const char *name)
 {
-    (void)dir;
-    (void)name;
-    return NULL;
+    uint32_t index = hash(name) % dir->taille;
+    return find(&(dir->tab_list[index]), name);
 }
 
 /*
@@ -47,8 +55,10 @@ const char *dir_lookup_num(struct dir *dir, const char *name)
 */
 void dir_delete(struct dir *dir, const char *name)
 {
-    (void)dir;
-    (void)name;
+    if (dir_lookup_num(dir, name) != NULL) {
+        uint32_t index = hash(name) % dir->taille;
+        delete(&(dir->tab_list[index]), name);
+    }
 }
 
 /*
@@ -64,5 +74,7 @@ void dir_free(struct dir *dir)
 */
 void dir_print(struct dir *dir)
 {
-    (void)dir;
+    for (uint32_t i = 0 ; i < dir->taille ; ++i) {
+        display(dir->tab_list[i]);
+    }
 }
