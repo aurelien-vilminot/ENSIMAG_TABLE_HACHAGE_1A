@@ -17,6 +17,8 @@ extern const char * find(struct contact **lc, const char *name);
 
 extern void delete_elem(struct contact **lc, const char *name);
 
+extern void free_list(struct contact *lc);
+
 extern void display(struct contact *lc);
 
 #endif /* _CONTACT_H_ */

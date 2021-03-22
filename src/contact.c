@@ -47,8 +47,8 @@ const char * find(struct contact **lc, const char *name) {
     struct contact *first = *lc;
     const char *num = NULL;
 
-    if (*lc != NULL) {
-        while ((*lc)->suiv != NULL) {
+    if ((*lc) != NULL) {
+        while ((*lc) != NULL) {
             if ((*lc)->name == name) {
                 num = (*lc)->num;
                 break;
@@ -67,9 +67,11 @@ void delete_elem(struct contact **lc, const char *name) {
     if ((*lc)->name == name) {
         *lc = (*lc)->suiv;
     } else {
-        while ((*lc)->suiv != NULL && ((*lc)->suiv)->name != name) {
+        while ((*lc)->suiv != NULL) {
             if (((*lc)->suiv)->name == name) {
+                struct contact *to_suppr = (*lc)->suiv;
                 (*lc)->suiv = ((*lc)->suiv)->suiv;
+                free(to_suppr);
                 break;
             }
             *lc = (*lc)->suiv;
@@ -78,10 +80,18 @@ void delete_elem(struct contact **lc, const char *name) {
     }
 }
 
+void free_list(struct contact *lc) {
+    struct contact *next_contact = lc;
+    while (lc != NULL) {
+        next_contact = next_contact->suiv;
+        free(lc);
+        lc = next_contact;
+    }
+}
+
 void display(struct contact *lc) {
     while (lc != NULL) {
         printf("%s : %s\n", lc->name, lc->num);
         lc = lc->suiv;
     }
-    printf("END\n");
 }

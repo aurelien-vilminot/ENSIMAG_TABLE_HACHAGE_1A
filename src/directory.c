@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <directory.h>
 #include <contact.h>
@@ -9,14 +10,19 @@
   Crée un nouvel annuaire contenant _len_ listes vides.
 */
 struct dir {
-    struct contact *tab_list[0];
+    struct contact **m_tab;
     uint32_t taille;
 };
 
 struct dir *dir_create(uint32_t len)
 {
-    struct contact *m_tab[len];
-    struct dir *m_dir = {m_tab, len};
+    struct contact **m_tab = malloc(len * sizeof(struct contact*));
+    for (uint32_t i = 0 ; i  < len ; ++i) {
+        m_tab[i] = NULL;
+    }
+    struct dir *m_dir = malloc(sizeof(struct dir));
+    m_dir->m_tab = m_tab;
+    m_dir->taille = len;
     return m_dir;
 }
 
@@ -28,14 +34,16 @@ struct dir *dir_create(uint32_t len)
 */
 char *dir_insert(struct dir *dir, const char *name, const char *num)
 {
-    char *search_result = dir_lookup_num(dir, name);
+    const char *search_result = dir_lookup_num(dir, name);
     uint32_t index = hash(name) % dir->taille;
     if (search_result == NULL) {
-        insert(&(dir->tab_list[index]), name, num);
+        insert(&(dir->m_tab[index]), name, num);
         return NULL;
     } else {
-        replace(&(dir->tab_list[index]), name, num);
-        return search_result;
+        replace(&(dir->m_tab[index]), name, num);
+        char *old_num = malloc(sizeof(strlen(search_result)));
+        strcpy(old_num, search_result);
+        return old_num;
     }
 }
 
@@ -46,7 +54,7 @@ char *dir_insert(struct dir *dir, const char *name, const char *num)
 const char *dir_lookup_num(struct dir *dir, const char *name)
 {
     uint32_t index = hash(name) % dir->taille;
-    return find(&(dir->tab_list[index]), name);
+    return find(&(dir->m_tab[index]), name);
 }
 
 /*
@@ -57,7 +65,7 @@ void dir_delete(struct dir *dir, const char *name)
 {
     if (dir_lookup_num(dir, name) != NULL) {
         uint32_t index = hash(name) % dir->taille;
-        delete(&(dir->tab_list[index]), name);
+        delete_elem(&(dir->m_tab[index]), name);
     }
 }
 
@@ -66,7 +74,11 @@ void dir_delete(struct dir *dir, const char *name)
 */
 void dir_free(struct dir *dir)
 {
-    (void)dir;
+    for (uint32_t i = 0 ; i < dir->taille ; ++i) {
+        free_list(dir->m_tab[i]);
+    }
+    free(dir->m_tab);
+    free(dir);
 }
 
 /*
@@ -75,6 +87,6 @@ void dir_free(struct dir *dir)
 void dir_print(struct dir *dir)
 {
     for (uint32_t i = 0 ; i < dir->taille ; ++i) {
-        display(dir->tab_list[i]);
+        display(dir->m_tab[i]);
     }
 }
