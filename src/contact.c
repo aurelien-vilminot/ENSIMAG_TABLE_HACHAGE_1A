@@ -91,7 +91,63 @@ void free_list(struct contact *lc) {
 
 void display(struct contact *lc) {
     while (lc != NULL) {
-        printf("%s : %s\n", lc->name, lc->num);
+        printf("[%s : %s], ", lc->name, lc->num);
         lc = lc->suiv;
+    }
+}
+
+uint32_t get_len_list(struct contact *lc) {
+    uint32_t len_linked_list = 0;
+    while (lc != NULL) {
+        ++len_linked_list;
+        lc = lc->suiv;
+    }
+    return len_linked_list;
+}
+
+struct contact * get_elem_i(struct contact **lc, uint32_t i) {
+    struct contact *first = *lc;
+    uint32_t compt = 0;
+
+    if (i == 0) {
+        return *lc;
+    } else {
+        while (*lc != NULL) {
+            if (compt == i) {
+                struct contact * tmp = *lc;
+                *lc = first;
+                return tmp;
+            }
+            ++compt;
+            *lc = (*lc)->suiv;
+        }
+        *lc = first;
+    }
+    return NULL;
+}
+
+const char * get_name(struct contact *m_contact) {
+    return m_contact->name;
+}
+
+const char * get_num(struct contact *m_contact) {
+    return m_contact->num;
+}
+
+extern void deplace_contact(struct contact **m_contact, const char *name, const char *num) {
+    struct contact *new_contact = malloc(sizeof(struct contact));
+    struct contact *first = *m_contact;
+    new_contact->suiv = NULL;
+    new_contact->name = name;
+    new_contact->num = num;
+
+    if (*m_contact != NULL) {
+        while ((*m_contact)->suiv != NULL) {
+            *m_contact = (*m_contact)->suiv;
+        }
+        (*m_contact)->suiv = new_contact;
+        *m_contact = first;
+    } else {
+        *m_contact = new_contact;
     }
 }
