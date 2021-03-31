@@ -8,9 +8,6 @@
 */
 struct contact;
 
-/* TOUT DOUX: à compléter */
-/* Profitez de cette période sombre pour braver les interdits et rétablir le contact. */
-
 extern void insert(struct contact **lc, const char *name, const char *num);
 
 extern void replace(struct contact **lc, const char *name, const char *num);
@@ -30,7 +27,5 @@ extern struct contact * get_elem_i(struct contact **lc, uint32_t i);
 extern const char * get_name(struct contact *m_contact);
 
 extern const char * get_num(struct contact *m_contact);
-
-extern void deplace_contact(struct contact **m_contact, const char *name, const char *num);
 
 #endif /* _CONTACT_H_ */

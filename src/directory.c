@@ -119,10 +119,8 @@ void dir_print(struct dir *dir)
 void resize_of_table(struct dir *dir) {
     float occupation = dir->nb_contacts / dir->len;
     if (occupation > 0.75) {
-        printf("j'agrandi, occupation : %f\n", occupation);
         change_tab_contact_size(dir, dir->len * 2);
     } else if (occupation < 0.15 && dir->len > 10) {
-        printf("je rétrécis, occupation : %f\n", occupation);
         uint32_t new_len = (dir->len/2) > 10 ? dir->len/2 : 10;
         change_tab_contact_size(dir, new_len);
     }
@@ -130,9 +128,14 @@ void resize_of_table(struct dir *dir) {
 
 /*
   Change la taille de la table de hachage en récréant tab_contacts
+  Récupère l'ensemble des contacts dans chaque liste chaînée et les remet en place dans le nouveau tableau
+  Libère de la mémoire des contacts dans l'ancien tableau
 */
 void change_tab_contact_size(struct dir *dir, uint32_t new_len) {
     struct contact **tab_contacts = malloc(new_len * sizeof(struct contact*));
+    for (uint32_t i = 0 ; i  < new_len ; ++i) {
+        tab_contacts[i] = NULL;
+    }
 
     for (size_t i = 0 ; i  < dir->len ; ++i) {
         uint32_t len_linked_list = get_len_list(dir->tab_contacts[i]);
@@ -143,9 +146,13 @@ void change_tab_contact_size(struct dir *dir, uint32_t new_len) {
                 const char * num = get_num(m_contact);
 
                 uint32_t new_index = hash(name) % new_len;
-                deplace_contact(&(tab_contacts[new_index]), name, num);
+                insert(&(tab_contacts[new_index]), name, num);
             }
         }
+    }
+
+    for (uint32_t i = 0 ; i < dir->len ; ++i) {
+        free_list(dir->tab_contacts[i]);
     }
     free(dir->tab_contacts);
     dir->tab_contacts = tab_contacts;
