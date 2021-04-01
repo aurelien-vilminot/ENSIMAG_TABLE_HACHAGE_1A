@@ -51,17 +51,21 @@ char *dir_insert(struct dir *dir, const char *name, const char *num)
 
     const char *search_result = dir_lookup_num(dir, name);
     uint32_t index = hash(name) % dir->len;
-    char *old_num;
+
+    char *old_num = NULL;
+
     if (search_result == NULL) {
         insert(&(dir->tab_contacts[index]), name, num);
-        old_num = NULL;
+        return NULL;
     } else {
         replace(&(dir->tab_contacts[index]), name, num);
-        char *old_num = malloc(sizeof(strlen(search_result)));
+
+        old_num = malloc(strlen(search_result) + 1);
         strcpy(old_num, search_result);
-        free((char*)search_result);
+        free((char *)search_result);
+
+        return old_num;
     }
-    return old_num;
 }
 
 /*
