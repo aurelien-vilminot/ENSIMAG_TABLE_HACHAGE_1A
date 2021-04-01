@@ -26,12 +26,11 @@ int main(void)
 
     for (size_t id = 0; id < 2; id++) {
         char * return_of_insertion = dir_insert(dir, names[id], names[id + 2]);
-        printf("La fonction d'insertion pour %s a retournée la valeur/numéro suivant.e : %s\n", names[id], return_of_insertion);
+        printf("La fonction d'insertion pour %s a retournée la valeur/ancien numéro suivant.e : %s\n", names[id], return_of_insertion);
+        free(return_of_insertion);
     }
 
     dir_print(dir);
-
     dir_free(dir);
-
     return EXIT_SUCCESS;
 }
