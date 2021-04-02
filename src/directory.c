@@ -12,7 +12,7 @@
 struct dir {
     struct contact **tab_contacts;
     uint32_t len;
-    float nb_contacts;
+    uint32_t nb_contacts;
 };
 
 /*
@@ -21,22 +21,37 @@ struct dir {
 static void resize_of_table(struct dir *dir);
 
 /*
-  Change la taille de la table de hachage
+  Change la taille de la table de hachage en récréant tab_contacts
+  Récupère l'ensemble des contacts dans chaque liste chaînée et les remet en place dans le nouveau tableau
+  Libère de la mémoire des contacts dans l'ancien tableau
 */
 static void change_tab_contact_size(struct dir *dir, uint32_t new_len);
 
+/*
+ * Crée une table de hachage de taille _len_
+ */
+static struct contact **create_tab_contact(uint32_t len);
+
 struct dir *dir_create(uint32_t len)
 {
+    struct dir *dir = malloc(sizeof(struct dir));
+    dir->tab_contacts = create_tab_contact(len);
+    dir->len = len;
+    dir->nb_contacts = 0;
+    return dir;
+}
+
+/*
+ * Crée une table de hachage de taille _len_
+ */
+struct contact **create_tab_contact(uint32_t len) {
     struct contact **tab_contacts = malloc(len * sizeof(struct contact*));
     for (uint32_t i = 0 ; i  < len ; ++i) {
         tab_contacts[i] = NULL;
     }
-    struct dir *dir = malloc(sizeof(struct dir));
-    dir->tab_contacts = tab_contacts;
-    dir->len = len;
-    dir->nb_contacts = 0.0;
-    return dir;
+    return tab_contacts;
 }
+
 
 /*
   Insère un nouveau contact dans l'annuaire _dir_, construit à partir des nom et
@@ -58,7 +73,11 @@ char *dir_insert(struct dir *dir, const char *name, const char *num)
         insert(&(dir->tab_contacts[index]), name, num);
     } else {
         replace(&(dir->tab_contacts[index]), name, num);
+
+        // Alloue l'espace mémoire nécessaire (longueur de la chaîne + 1 pour \0)
         old_num = malloc(strlen(search_result) + 1);
+
+        // Crée une copie de l'ancien numéro qui doit être supprimé par l'utilisateur dans le test
         strcpy(old_num, search_result);
     }
     return old_num;
@@ -117,7 +136,7 @@ void dir_print(struct dir *dir)
   Effectue un contrôle de la taille de la table de hachage
 */
 void resize_of_table(struct dir *dir) {
-    float occupation = dir->nb_contacts / dir->len;
+    float occupation = (float) dir->nb_contacts / (float) dir->len;
     if (occupation > 0.75) {
         change_tab_contact_size(dir, dir->len * 2);
     } else if (occupation < 0.15 && dir->len > 10) {
@@ -132,15 +151,12 @@ void resize_of_table(struct dir *dir) {
   Libère de la mémoire des contacts dans l'ancien tableau
 */
 void change_tab_contact_size(struct dir *dir, uint32_t new_len) {
-    struct contact **tab_contacts = malloc(new_len * sizeof(struct contact*));
-    for (uint32_t i = 0 ; i  < new_len ; ++i) {
-        tab_contacts[i] = NULL;
-    }
+    struct contact **tab_contacts = create_tab_contact(new_len);
 
-    for (size_t i = 0 ; i  < dir->len ; ++i) {
+    for (uint32_t i = 0 ; i  < dir->len ; ++i) {
         uint32_t len_linked_list = get_len_list(dir->tab_contacts[i]);
         if (len_linked_list > 0) {
-            for (size_t j = 0 ; j < len_linked_list ; ++j) {
+            for (uint32_t j = 0 ; j < len_linked_list ; ++j) {
                 struct contact * m_contact = get_elem_i(&(dir->tab_contacts[i]), j);
                 const char * name = get_name(m_contact);
                 const char * num = get_num(m_contact);
